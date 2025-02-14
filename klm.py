@@ -3,6 +3,10 @@ from machine import Pin
 from picographics import PicoGraphics, DISPLAY_TUFTY_2040
 from time import sleep, sleep_ms
 from pimoroni import Button
+import jpegdec
+import time
+
+# https://github.com/pimoroni/pimoroni-pico/blob/main/micropython/modules/picographics/README.md#changing-the-font
 
 # turn LED on and off
 
@@ -33,14 +37,6 @@ RED = display.create_pen(255, 0, 0)
 GREEN = display.create_pen(0, 255, 0)
 BLUE = display.create_pen(0, 0, 255)
 
-display.set_pen(WHITE)
-display.text("Kölsch", 0, 0, 320, 4)
-display.text("Intellijenz", 10, 30, 320, 4)
-
-display.set_pen(RED)
-display.text("Annemie, ich kann nit mieh!", 0, 100, 320, 4)
-display.update()
-
 button_a = Button(7, invert=False)
 button_b = Button(8, invert=False)
 button_c = Button(9, invert=False)
@@ -50,121 +46,78 @@ button_boot = Button(23, invert=True)
 
 WIDTH, HEIGHT = display.get_bounds()
 
+display.set_font("bitmap8")
+
 # Kölle Alaaf, Kölsch, Konfettiregen, 
 # Wie isset?
 
-while True:
-    if button_a.is_pressed:                               # if a button press is detected then...
-        display.set_pen(BLACK)                            # set pen to black
-        display.clear()                                   # clear display to the pen colour
-        display.set_pen(WHITE)                            # change the pen colour
-        display.text("Annemie, ich kann nit mieh!", 10, 10, WIDTH - 10, 3)  # display some text on the screen
-        display.update()                                  # update the display
-        sleep(1)                                    # pause for a sec
+j = jpegdec.JPEG(display)
 
-    elif button_b.is_pressed:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(TEAL)
-        display.text("Mer muss och jünne künne.", 10, 10, WIDTH - 10, 3)
-        display.update()
-        sleep(1)
+button_up = Button(22, invert=False)
+button_down = Button(6, invert=False)
+button_a = Button(7, invert=False)
 
-    elif button_c.is_pressed:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(MAGENTA)
-        display.text("Fließ kanns de vürdäusche, fuul muss de schon sin.", 10, 10, WIDTH - 10, 3)
-        display.update()
-        sleep(1)
+artikel = [
+    "Et es wie et es.",
+    "Et kütt wie et kütt.",
+    "Et hätt noch emmer joot jejange.",
+    "Wat fott es, es fott.",
+    "Et bliev nix wie et wor.",
+    "Kenne mer nit, bruche mer nit, fott domet.",
+    "Wat wellste maache?",
+    "Maach et joot, ävver nit zo off.",
+    "Wat soll dä Kwatsch?",
+    "Drinks de ejne met?",
+    "Do laachs de disch kapott."
+]
 
-    elif button_up.is_pressed:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(YELLOW)
-        display.text("Jede Jeck es anders", 10, 10, WIDTH - 10, 3)
-        display.update()
-        sleep(1)
+try:
+   # Open the JPEG file
+    j.open_file("KLM.jpg")
 
-    elif button_down.is_pressed:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(GREEN)
-        display.text("Button DOWN pressed", 10, 10, WIDTH - 10, 3)
-        display.update()
-        sleep(1)
+    # Draws a box around the image
 
-    elif button_boot.is_pressed:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(BLUE)
-        display.text("Button BOOT/USR pressed", 10, 10, WIDTH - 10, 3)
-        display.update()
-        sleep(1)
+    # Decode the JPEG
+    j.decode(0, 0, jpegdec.JPEG_SCALE_FULL, dither=True)
 
-    else:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(RED)
-        display.text("Kölsch Intellijenz", 10, 10, WIDTH, 3)
-        display.update()
+# Handle the error if the image doesn't exist on the flash.
+except OSError:
+    print("Error: jpg File missing. Copy the PNG file from the example folder to your Pico using Thonny and run the example again.")
 
-    sleep(0.1)  # this number is how frequently Tufty checks for button presseswhile True:
-    if button_a.is_pressed:                               # if a button press is detected then...
-        display.set_pen(BLACK)                            # set pen to black
-        display.clear()                                   # clear display to the pen colour
-        display.set_pen(WHITE)                            # change the pen colour
-        display.text("Annemie, ich kann nit mieh!", 10, 10, WIDTH - 10, 3)  # display some text on the screen
-        display.update()                                  # update the display
-        sleep(1)                                    # pause for a sec
+def contrastText(d, c, t, x, y, w, h):
+    d.set_pen(BLACK)
+    d.text(t,  x-2, y-2, w, h)
+    d.set_pen(WHITE)
+    d.text(t,  x+1, y+2, w, h)
+    d.set_pen(c)
+    d.text(t, x, y, w, h)
 
-    elif button_b.is_pressed:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(TEAL)
-        display.text("Mer muss och jünne künne.", 10, 10, WIDTH - 10, 3)
-        display.update()
-        sleep(1)
 
-    elif button_c.is_pressed:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(MAGENTA)
-        display.text("Fließ kanns de vürdäusche, fuul muss de schon sin.", 10, 10, WIDTH - 10, 3)
-        display.update()
-        sleep(1)
+display.set_pen(BLACK)
+display.text("Fraag misch ens!", 10, 2, 320, 4)
+    
+    
+text = artikel[4]
 
-    elif button_up.is_pressed:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(YELLOW)
-        display.text("Jede Jeck es anders", 10, 10, WIDTH - 10, 3)
-        display.update()
-        sleep(1)
+display.set_font("bitmap8")
 
-    elif button_down.is_pressed:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(GREEN)
-        display.text("Button DOWN pressed", 10, 10, WIDTH - 10, 3)
-        display.update()
-        sleep(1)
+contrastText(display, RED, text, 10, 150, 300, 4)
+# contrastText(display, GREEN, "JOT", 240, 55, 80, 4)
 
-    elif button_boot.is_pressed:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(BLUE)
-        display.text("Button BOOT/USR pressed", 10, 10, WIDTH - 10, 3)
-        display.update()
-        sleep(1)
+# contrastText(display, RED, "NIT SO JOT", 100, 155, 240, 4)
 
-    else:
-        display.set_pen(BLACK)
-        display.clear()
-        display.set_pen(WHITE)
-        display.text("Kölsch Intellijenz", 10, 10, WIDTH, 3)
-        display.update()
+display.update()
 
-    sleep(0.1)  # this number is how frequently Tufty checks for button presses
+led = Pin(25, Pin.OUT)
+
+while True:    
+    t = time.ticks_ms() / 1000.0
+
+    while button_up.is_pressed:
+        led.value(1)
+        time.sleep(1.0)
+        led.value(0)
+        time.sleep(0.01)
+
 
 # end::three[]
