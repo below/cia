@@ -5,6 +5,7 @@ from time import sleep, sleep_ms
 from pimoroni import Button
 import jpegdec
 import time
+import random
 
 # https://github.com/pimoroni/pimoroni-pico/blob/main/micropython/modules/picographics/README.md#changing-the-font
 
@@ -46,16 +47,10 @@ button_boot = Button(23, invert=True)
 
 WIDTH, HEIGHT = display.get_bounds()
 
-display.set_font("bitmap8")
-
 # Kölle Alaaf, Kölsch, Konfettiregen, 
 # Wie isset?
 
 j = jpegdec.JPEG(display)
-
-button_up = Button(22, invert=False)
-button_down = Button(6, invert=False)
-button_a = Button(7, invert=False)
 
 artikel = [
     "Et es wie et es.",
@@ -68,7 +63,11 @@ artikel = [
     "Maach et joot, ävver nit zo off.",
     "Wat soll dä Kwatsch?",
     "Drinks de ejne met?",
-    "Do laachs de disch kapott."
+    "Do laachs de disch kapott.",
+    "11",
+    "Wer suffe kann, der kann och ärbigge.",
+    "KEIN KÖLSCH ENTGEHT US!",
+    "Wat sääst de?"
 ]
 
 try:
@@ -93,31 +92,52 @@ def contrastText(d, c, t, x, y, w, h):
     d.text(t, x, y, w, h)
 
 
-display.set_pen(BLACK)
-display.text("Fraag misch ens!", 10, 2, 320, 4)
-    
-    
-text = artikel[4]
-
-display.set_font("bitmap8")
-
-contrastText(display, RED, text, 10, 150, 300, 4)
-# contrastText(display, GREEN, "JOT", 240, 55, 80, 4)
-
-# contrastText(display, RED, "NIT SO JOT", 100, 155, 240, 4)
-
-display.update()
-
 led = Pin(25, Pin.OUT)
 
-while True:    
-    t = time.ticks_ms() / 1000.0
 
-    while button_up.is_pressed:
-        led.value(1)
-        time.sleep(1.0)
-        led.value(0)
-        time.sleep(0.01)
+index = -1
+t = 0
+
+while True:    
+
+    if t > 0:
+        now = time.ticks_ms() / 1000.0
+        if now - t > 10:
+            index = -1
+            t = 0
+        
+
+    if button_b.read():
+        while button_b.is_pressed:
+            led.value(1)
+            time.sleep(1.0)
+            led.value(0)
+            time.sleep(0.01)
+        index = random.randint(0, len(artikel)-1)
+        t = time.ticks_ms() / 1000.0
+
+
+    if button_down.read():
+        index = index - 1
+
+    if button_up.read():
+        index = index + 1
+
+    if button_c.read():
+        index = -1
+        
+    j.decode(0, 0, jpegdec.JPEG_SCALE_FULL, dither=True)
+
+    display.set_font("bitmap8")
+    display.set_pen(BLACK)
+    display.text("Fraag misch ens!", 10, 2, WIDTH, 4)
+    
+    if index > -1:
+        text = artikel[index]
+        display.set_font("bitmap8")
+        contrastText(display, GREEN, text, 10, 120, WIDTH-20, 4)
+
+    display.update()
 
 
 # end::three[]
